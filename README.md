@@ -1,9 +1,32 @@
 # Gecho - A Simple Echo Server in Go
 
+This echo server supports returning request information such as headers, query params, path params, TLS info and other request metadata.
+
 Simply hit the echo server on the port you define when you run:
+
+Without SSL
 ```bash
 docker run -d -p xxxx:8080 nodstuff/gecho:latest
 ```
+
+With SSL
+```bash
+docker run -d -p 443:8443 -p 80:8080 -v local/path/to/certs:/ssl/certs nodstuff/gecho:latest
+```
+
+Generate Cert
+```bash
+openssl genrsa -out server.key 2048
+
+openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
+```
+
+The echo server will start up listening on `HTTP` and `HTTPS` if you supply certs.
+
+If you choose not to supply certs then it will automatically only start up in `HTTP` mode, no changes required.
+
+The echo server accepts all HTTP methods and request bodies which will be returned in the response.
+
 ### Sample Response
 ```json
 {

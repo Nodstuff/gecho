@@ -2,17 +2,21 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net"
 	"net/http"
+	"os"
 )
 
 func main() {
-	if err := http.ListenAndServe(":8080", handleEcho()); err != nil {
-		log.Fatal(err)
+	if fileExists("./ssl/certs/server.crt") {
+		startSecureAndInsecure()
+	} else {
+		startInsecureOnly()
 	}
 }
 
@@ -50,7 +54,6 @@ func buildResponseBody(req *http.Request) map[string]any {
 	b["session"] = buildSessionResponse(req)
 	b["body"] = rbm
 	b["statusCode"] = 200
-
 	return b
 }
 
@@ -68,7 +71,7 @@ func buildURIResponse(req *http.Request) map[string]any {
 	u := make(map[string]any)
 	u["httpVersion"] = req.Proto
 	u["method"] = req.Method
-	u["scheme"] = getScheme(req.URL.Scheme)
+	u["scheme"] = getScheme(req.TLS)
 	u["fullPath"] = req.URL.Path
 	u["queryString"] = req.URL.Query().Encode()
 	return u
@@ -86,7 +89,6 @@ func buildNetworkResponse(req *http.Request) map[string]any {
 func buildSessionResponse(req *http.Request) map[string]any {
 	s := make(map[string]any)
 	s["cookie"] = req.Cookies()
-
 	return s
 }
 
@@ -101,11 +103,11 @@ func buildSSLResponse(req *http.Request) map[string]any {
 	return s
 }
 
-func getScheme(s string) string {
-	if s == "" {
+func getScheme(s *tls.ConnectionState) string {
+	if s == nil {
 		return "http"
 	}
-	return s
+	return "https"
 }
 
 func getPort(a string) string {
@@ -114,4 +116,30 @@ func getPort(a string) string {
 		p = "80"
 	}
 	return p
+}
+
+func startInsecureOnly() {
+	if err := http.ListenAndServe(":8080", handleEcho()); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func startSecureAndInsecure() {
+	go func() {
+		if err := http.ListenAndServe(":8080", handleEcho()); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	if err := http.ListenAndServeTLS(":8443", "./ssl/certs/server.crt", "./ssl/certs/server.key", handleEcho()); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
