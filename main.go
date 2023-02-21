@@ -45,7 +45,7 @@ func buildResponseBody(req *http.Request) map[string]any {
 	}
 	b := make(map[string]any)
 	b["statusBody"] = "Healthy"
-	b["statusReason"] = fmt.Sprintf("Incoming request was on port %s", getPort(req.Host))
+	b["statusReason"] = fmt.Sprintf("Incoming request was on port %s", getPort(req.Host, req.TLS))
 	b["hostname"] = req.Host
 	b["uri"] = buildURIResponse(req)
 	b["network"] = buildNetworkResponse(req)
@@ -79,8 +79,8 @@ func buildURIResponse(req *http.Request) map[string]any {
 
 func buildNetworkResponse(req *http.Request) map[string]any {
 	n := make(map[string]any)
-	n["clientPort"] = getPort(req.RemoteAddr)
-	n["serverPort"] = getPort(req.Host)
+	n["clientPort"] = getPort(req.RemoteAddr, nil)
+	n["serverPort"] = getPort(req.Host, req.TLS)
 	n["serverAddress"] = req.Host
 	n["clientAddress"] = req.RemoteAddr
 	return n
@@ -110,7 +110,10 @@ func getScheme(s *tls.ConnectionState) string {
 	return "https"
 }
 
-func getPort(a string) string {
+func getPort(a string, t *tls.ConnectionState) string {
+	if t != nil {
+		return "443"
+	}
 	_, p, _ := net.SplitHostPort(a)
 	if p == "" {
 		p = "80"
