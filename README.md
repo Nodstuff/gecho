@@ -13,7 +13,7 @@ Simply hit the echo server on the port you define when you run:
 
 Without SSL
 ```bash
-docker run -d -p xxxx:8080 nodstuff/gecho:latest
+docker run -d -p 8080:8080 nodstuff/gecho:latest
 ```
 
 With SSL
