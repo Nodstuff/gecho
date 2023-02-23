@@ -1,5 +1,8 @@
-# Gecho - A Simple Echo Server in Go
+<p align="center">
+  <img src="https://static.thenounproject.com/png/193205-200.png" width="150" />
+</p>
 
+# Gecho - A Simple Echo Server in Go
 This echo server supports returning request information such as headers, query params, path params, TLS info and other request metadata.
 
 Simply hit the echo server on the port you define when you run:
