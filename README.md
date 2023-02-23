@@ -7,7 +7,7 @@ This echo server supports returning request information such as headers, query p
 
 Pull with docker:
 ```bash
-docker pull nodstuff:gecho:latest
+docker pull nodstuff/gecho:latest
 ```
 Simply hit the echo server on the port you define when you run:
 
