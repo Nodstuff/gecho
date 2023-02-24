@@ -35,13 +35,15 @@ func echoHandler() http.Handler {
 
 func buildResponseBody(r *http.Request) map[string]any {
 	rbm := make(map[string]any)
-	rb, err := io.ReadAll(r.Body)
-	if err != nil {
-		log.Println(err)
-	}
-	err = json.Unmarshal(rb, &rbm)
-	if err != nil {
-		log.Println(err)
+	if r.ContentLength > 0 {
+		rb, err := io.ReadAll(r.Body)
+		if err != nil {
+			log.Println(err)
+		}
+		err = json.Unmarshal(rb, &rbm)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 	b := make(map[string]any)
 	b["statusBody"] = "Healthy"
