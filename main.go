@@ -22,20 +22,27 @@ func main() {
 
 func echoHandler() http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Header().Set("Content-Type", "application/json")
 		d, err := json.Marshal(buildResponseBody(req))
 		if err != nil {
 			log.Println(err)
 		}
-		for key, values := range req.Header {
-			for _, value := range values {
-				rw.Header().Set(key, value)
-			}
-		}
+
+		handleResponseHeaders(rw, req)
+
 		if _, err = io.Copy(rw, bytes.NewReader(d)); err != nil {
 			log.Println(err)
 		}
 	})
+}
+
+func handleResponseHeaders(rw http.ResponseWriter, req *http.Request) {
+	req.Header.Del("Content-Length")
+	rw.Header().Set("Content-Type", "application/json")
+	for key, values := range req.Header {
+		for _, value := range values {
+			rw.Header().Set(key, value)
+		}
+	}
 }
 
 func buildResponseBody(r *http.Request) map[string]any {
