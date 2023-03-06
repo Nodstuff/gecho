@@ -27,6 +27,11 @@ func echoHandler() http.Handler {
 		if err != nil {
 			log.Println(err)
 		}
+		for key, values := range req.Header {
+			for _, value := range values {
+				rw.Header().Set(key, value)
+			}
+		}
 		if _, err = io.Copy(rw, bytes.NewReader(d)); err != nil {
 			log.Println(err)
 		}
