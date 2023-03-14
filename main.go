@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -10,11 +11,15 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 )
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	if fileExists("./ssl/certs/server.crt") {
-		startSecureAndInsecure()
+		startSecureAndInsecure(ctx)
 	} else {
 		startInsecureOnly()
 	}
@@ -148,9 +153,19 @@ func startInsecureOnly() {
 	}
 }
 
-func startSecureAndInsecure() {
+func startSecureAndInsecure(ctx context.Context) {
+	h := http.Server{
+		Addr:    ":8080",
+		Handler: echoHandler(),
+	}
+
 	go func() {
-		if err := http.ListenAndServe(":8080", echoHandler()); err != nil {
+		<-ctx.Done()
+		h.Shutdown(ctx)
+	}()
+
+	go func() {
+		if err := h.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
 	}()
