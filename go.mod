@@ -1,3 +1,3 @@
-module echo
+module gecho
 
 go 1.20

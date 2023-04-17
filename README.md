@@ -34,6 +34,13 @@ If you choose not to supply certs then it will automatically only start up in `H
 
 The echo server accepts all HTTP methods and request bodies which will be returned in the response.
 
+If a specific status code is required to be returned from the echo server directly, then a special header can be used to define that status: `X-Requested-Status`.
+
+If that header is omitted then there are default status codes returned depending on the HTTP verb used: 
+* POST -> 201
+* DELETE -> 204
+* Everything else -> 200
+
 ### Sample Response
 ```json
 {

@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 )
 
 func main() {
@@ -33,6 +34,8 @@ func echoHandler() http.Handler {
 		}
 
 		handleResponseHeaders(rw, req)
+
+		rw.WriteHeader(checkRequestedStatusHeader(req.Method, req.Header))
 
 		if _, err = io.Copy(rw, bytes.NewReader(d)); err != nil {
 			log.Println(err)
@@ -147,6 +150,25 @@ func fileExists(f string) bool {
 	return !i.IsDir()
 }
 
+func checkRequestedStatusHeader(m string, h http.Header) int {
+	status, err := strconv.Atoi(h.Get("X-Requested-Status"))
+	if err != nil {
+		return getDefaultStatus(m)
+	}
+	return status
+}
+
+func getDefaultStatus(m string) int {
+	switch m {
+	case http.MethodPost:
+		return http.StatusCreated
+	case http.MethodDelete:
+		return http.StatusNoContent
+	default:
+		return http.StatusOK
+	}
+}
+
 func startInsecureOnly() {
 	if err := http.ListenAndServe(":8080", echoHandler()); err != nil {
 		log.Fatal(err)
@@ -161,7 +183,10 @@ func startSecureAndInsecure(ctx context.Context) {
 
 	go func() {
 		<-ctx.Done()
-		h.Shutdown(ctx)
+		err := h.Shutdown(ctx)
+		if err != nil {
+			log.Println(err)
+		}
 	}()
 
 	go func() {
