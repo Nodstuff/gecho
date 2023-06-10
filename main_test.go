@@ -2,7 +2,9 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
 	"testing"
 )
@@ -48,11 +50,27 @@ func Test_buildSSL(t *testing.T) {
 		args args
 		want map[string]any
 	}{
-		// TODO: Add test cases.
+		{
+			name: "all values present",
+			args: args{r: &http.Request{TLS: &tls.ConnectionState{
+				NegotiatedProtocol: "https",
+				CipherSuite:        1234,
+				ServerName:         "gecho",
+				Version:            99,
+			}}},
+			want: map[string]any{
+				"negotiatedProtocol": "https",
+				"cipherSuite":        uint16(1234),
+				"serverName":         "gecho",
+				"version":            uint16(99),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := buildSSL(tt.args.r); !reflect.DeepEqual(got, tt.want) {
+				fmt.Println(got)
+				fmt.Println(tt.want)
 				t.Errorf("buildSSL() = %v, want %v", got, tt.want)
 			}
 		})
@@ -68,7 +86,15 @@ func Test_buildSession(t *testing.T) {
 		args args
 		want map[string]any
 	}{
-		// TODO: Add test cases.
+		{
+			name: "all session values copied",
+			args: args{r: &http.Request{Header: map[string][]string{
+				"Cookie": {"some-cookie-value"},
+			}}},
+			want: map[string]any{
+				"cookie": []*http.Cookie{{Name: "some-cookie-value"}},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -88,7 +114,42 @@ func Test_buildURI(t *testing.T) {
 		args args
 		want map[string]any
 	}{
-		// TODO: Add test cases.
+		{
+			name: "no TLS or query params",
+			args: args{r: &http.Request{
+				Proto:  "HTTP/1.1",
+				Method: http.MethodGet,
+				URL: &url.URL{
+					Path: "/path/to/thing",
+				},
+			}},
+			want: map[string]any{
+				"fullPath":    "/path/to/thing",
+				"httpVersion": "HTTP/1.1",
+				"method":      http.MethodGet,
+				"queryString": "",
+				"scheme":      "http",
+			},
+		},
+		{
+			name: "with TLS and query params",
+			args: args{r: &http.Request{
+				TLS:    &tls.ConnectionState{},
+				Proto:  "HTTP/1.1",
+				Method: http.MethodGet,
+				URL: &url.URL{
+					Path:     "/path/to/thing?params=true",
+					RawQuery: "params=true",
+				},
+			}},
+			want: map[string]any{
+				"fullPath":    "/path/to/thing?params=true",
+				"httpVersion": "HTTP/1.1",
+				"method":      http.MethodGet,
+				"queryString": "params=true",
+				"scheme":      "https",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

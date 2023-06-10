@@ -5,8 +5,10 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -144,7 +146,7 @@ func getPort(a string, s *tls.ConnectionState) string {
 
 func fileExists(f string) bool {
 	i, err := os.Stat(f)
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		return false
 	}
 	return !i.IsDir()
