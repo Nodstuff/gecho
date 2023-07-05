@@ -164,8 +164,6 @@ func getDefaultStatus(m string) int {
 	switch m {
 	case http.MethodPost:
 		return http.StatusCreated
-	case http.MethodDelete:
-		return http.StatusNoContent
 	default:
 		return http.StatusOK
 	}
