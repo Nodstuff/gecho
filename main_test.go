@@ -95,6 +95,13 @@ func Test_buildSession(t *testing.T) {
 				"cookie": []*http.Cookie{{Name: "some-cookie-value"}},
 			},
 		},
+		{
+			name: "empty session values",
+			args: args{r: &http.Request{}},
+			want: map[string]any{
+				"cookie": "",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
