@@ -99,7 +99,7 @@ func Test_buildSession(t *testing.T) {
 			name: "empty session values",
 			args: args{r: &http.Request{}},
 			want: map[string]any{
-				"cookie": "",
+				"cookie": []*http.Cookie{},
 			},
 		},
 	}
