@@ -74,7 +74,7 @@ func buildResponseBody(r *http.Request) map[string]any {
 	b["uri"] = buildURI(r)
 	b["network"] = buildNetwork(r)
 	b["ssl"] = buildSSL(r)
-	b["requestHeaders"] = buildRequestHeaders(r)
+	b["requestheaders"] = buildRequestHeaders(r)
 	b["session"] = buildSession(r)
 	b["body"] = rbm
 	b["statusCode"] = http.StatusOK
