@@ -107,6 +107,7 @@ func buildNetwork(r *http.Request) map[string]any {
 	n["serverPort"] = getPort(r.Host, r.TLS)
 	n["serverAddress"] = r.Host
 	n["clientAddress"] = r.RemoteAddr
+	n["serverHost"], _ = os.Hostname()
 	return n
 }
 
