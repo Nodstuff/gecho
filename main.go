@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -40,7 +39,7 @@ func echoHandler() http.Handler {
 
 		rw.WriteHeader(checkRequestedStatusHeader(req.Method, req.Header))
 
-		if _, err = io.Copy(rw, bytes.NewReader(d)); err != nil {
+		if _, err = rw.Write(d); err != nil {
 			log.Println(err)
 			return
 		}
