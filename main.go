@@ -34,6 +34,7 @@ func echoHandler() http.Handler {
 		if err != nil {
 			log.Println(err)
 		}
+		defer req.Body.Close()
 
 		handleResponseHeaders(rw, req)
 
@@ -41,6 +42,7 @@ func echoHandler() http.Handler {
 
 		if _, err = io.Copy(rw, bytes.NewReader(d)); err != nil {
 			log.Println(err)
+			return
 		}
 	})
 }
@@ -61,10 +63,12 @@ func buildResponseBody(r *http.Request) map[string]any {
 		rb, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Println(err)
+			return nil
 		}
 		err = json.Unmarshal(rb, &rbm)
 		if err != nil {
 			log.Println(err)
+			return nil
 		}
 	}
 	b := make(map[string]any)
@@ -187,6 +191,7 @@ func startSecureAndInsecure(ctx context.Context) {
 		err := h.Shutdown(ctx)
 		if err != nil {
 			log.Println(err)
+			return
 		}
 	}()
 
